@@ -3,7 +3,7 @@ name: Frontend Continuous Integration
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   lint:
