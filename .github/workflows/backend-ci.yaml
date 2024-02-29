@@ -59,3 +59,39 @@ jobs:
       - name: Test pipenv
         run: pipenv run test
 
+  build:
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: starter/backend
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v3
+
+      - name: Install pipenv
+        run: pip install pipenv
+
+      - name: Cache dependencies
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.local/share/virtualenvs
+          key: deps-python-${{ hashFiles('**/Pipfile.lock') }}
+
+      - name: Install dependencies
+        run: pipenv install --dev
+
+      - name: Build Docker image
+        run: docker build --tag mppk-backend:latest .
+
+      - name: Run Docker image
+        run: docker run -p 5000:5000 --name mppk-backend -d mppk-backend
+
+      - name: Check the running application
+        run: curl http://localhost:5000/movies
+
+      - name: Stop the application
+        run: docker stop mppk-backend
+
