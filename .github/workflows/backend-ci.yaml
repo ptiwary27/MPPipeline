@@ -1,11 +1,10 @@
 name: 'Backend Continuous Integration'
 on:
-  pull_request:
+  #pull_request:
+  push:
     branches:
       - 'main'
-    # paths:
-    #   - 'starter/frontend/**'
-  workflow_dispatch:
+  #workflow_dispatch:
 
 jobs:
   lint:
@@ -33,3 +32,30 @@ jobs:
 
       - name: test pipenv
         run: pipenv run lint
+
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: starter/backend
+    steps:
+      - name: Check out the code 
+        uses: actions/checkout@v3
+
+      - name: Install pipenv 
+        run: pip install pipenv
+
+      - name: Cache dependencies
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.local/share/virtualenvs
+          key: deps-python-${{ hashFiles('**/Pipfile.lock') }}
+
+      - name: Install dependencies
+        run: pipenv install --dev
+
+      - name: Test pipenv
+        run: pipenv run test
+
