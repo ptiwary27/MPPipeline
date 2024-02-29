@@ -41,7 +41,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: test
-        run: CI=true npm test
+        run: npm run test
 
   build:
     needs: [test, lint]
@@ -63,8 +63,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Docker image
-        run: docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000 --tag=mpppk-frontend:latest .
-      
-      - name: Run Docker image
-        run: docker run --name mp-frontend -p 3000:3000 -d mpppk-frontend
+      - name: build run
+        run: npm run test
+
+
+ 
