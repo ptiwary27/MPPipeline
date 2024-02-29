@@ -33,6 +33,7 @@ jobs:
 
       - name: test pipenv
         run: pipenv run lint
+
   test:
     runs-on: ubuntu-latest
     defaults:
@@ -58,3 +59,49 @@ jobs:
 
       - name: test pipenv
         run: pipenv run test
+  
+  build:
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: starter/backend
+    steps:
+    - name: Check out the code
+      uses: actions/checkout@v3
+
+    - name: Install pipenv
+      run: pip install pipenv
+
+    - name: Cache dependencies
+      id: cache
+      uses: actions/cache@v3
+      with:
+        path: ~/.local/share/virtualenvs
+        key: deps-python-${{ hashFiles('**/Pipfile.lock') }}
+
+    - name: Install dependencies
+      run: pipenv install --dev
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-session-token: ${{ secrets.AWS_SESSION_TOKEN}}
+        aws-region: us-east-1
+
+    - name: Login to ECR
+      id: ecr-login
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Build and push image to ECR
+      env:
+        REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+        REPOSITORY: mppk-backend
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+        docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
