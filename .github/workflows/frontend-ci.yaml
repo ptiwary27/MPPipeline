@@ -68,6 +68,3 @@ jobs:
       
       - name: Run Docker image
         run: docker run --name mp-frontend -p 3000:3000 -d mpppk-frontend
-
-      - name: Stop the application
-        run: docker stop mpppk-frontend
