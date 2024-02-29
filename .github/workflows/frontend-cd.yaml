@@ -86,7 +86,7 @@ jobs:
         id: ecr-login
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build and push image to ECR
+      - name: Build and push an image to Elastic Container Registry
         env:
           REGISTRY: ${{ steps.ecr-login.outputs.registry }}
           REPOSITORY: mppk-frontend
@@ -94,3 +94,18 @@ jobs:
         run: |
           docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000 -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name frontend-cluster
+
+      - name: Set image tag to a latest version
+        run: kustomize edit set image $REPOSITORY=$REGISTRY/$REPOSITORY:$IMAGE_TAG
+        env:
+          REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          REPOSITORY: mppk-frontend
+          IMAGE_TAG: ${{ github.sha }}
+        working-directory: starter/frontend/k8s
+
+      - name: Apply the manifests to the cluster
+        run: kustomize build | kubectl apply -f -
+        working-directory: starter/frontend/k8s
