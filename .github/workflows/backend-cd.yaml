@@ -1,11 +1,10 @@
 name: 'Backend Continuous Deployment'
 on:
-  push:
+
+  pull_request:
     branches:
       - 'main'
-    # paths:
-      # - 'starter/frontend/**'
-  #workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
   lint:

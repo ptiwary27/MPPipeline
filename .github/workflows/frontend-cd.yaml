@@ -1,11 +1,9 @@
 name: 'Frontend Continuous Deployment'
 on:
-  push:
+  pull_request:
     branches:
       - 'main'
-    # paths:
-    #   - 'starter/frontend/**'
-  #workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
   lint:
@@ -64,15 +62,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      # - name: Build Docker image
-      #   run: docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000 --tag=mp-frontend:latest .
-      
-      # - name: Run Docker image
-      #   run: docker run --name mp-frontend -p 3000:3000 -d mp-frontend
-
-      # - name: Stop the application
-      #   run: docker stop mp-frontend
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
