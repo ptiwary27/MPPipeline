@@ -105,3 +105,18 @@ jobs:
         docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
         docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
+    - name: update kubeconfig
+      run: aws eks update-kubeconfig --name cluster
+
+    - name: Set image tag to newer version
+      run: kustomize edit set image $REPOSITORY=$REGISTRY/$REPOSITORY:$IMAGE_TAG
+      env:
+        REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+        REPOSITORY: mppk-backend
+        IMAGE_TAG: ${{ github.sha }}
+      working-directory: starter/backend/k8s
+
+    - name: Apply the manifests to the cluster
+      run: kustomize build | kubectl apply -f -
+      working-directory: starter/backend/k8s
+
